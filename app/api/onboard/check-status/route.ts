@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { callCloudRun } from '@/lib/gcp-auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,9 +15,29 @@ export async function POST(request: NextRequest) {
 
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Check if user is admin
-    const adminUsers = process.env.DARX_ADMIN_USERS?.split(',').map(u => u.trim().toLowerCase()) || [];
-    const isAdmin = adminUsers.includes(normalizedEmail);
+    // Check if user is admin via Cloud Run Auth API
+    const authApiUrl = process.env.AUTH_API_URL || 'https://darx-auth-api-474964350921.us-central1.run.app';
+
+    let isAdmin = false;
+    try {
+      const response = await callCloudRun(`${authApiUrl}/api/auth/check-admin`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        isAdmin = data.is_admin || false;
+      } else {
+        console.error('Auth API error:', response.status, await response.text());
+      }
+    } catch (error) {
+      console.error('Error calling auth API:', error);
+      // Continue with isAdmin = false if auth API fails
+    }
 
     if (isAdmin) {
       // Admin gets access to the onboarding portal on darx-site-generator
