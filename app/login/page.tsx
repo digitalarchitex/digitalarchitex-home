@@ -5,6 +5,16 @@ import { useEffect, useState } from 'react';
 export default function LoginPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [currentUserEmail, setCurrentUserEmail] = useState('');
+
+  useEffect(() => {
+    // Check if logout parameter is present
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('logout') === 'true') {
+      setShowLogoutConfirm(true);
+    }
+  }, []);
 
   useEffect(() => {
     const waitForMemberstack = () => {
@@ -51,7 +61,14 @@ export default function LoginPage() {
 
         if (member) {
           console.log('Member authenticated:', member.auth.email);
-          handleAuthenticatedUser(member.auth.email);
+          setCurrentUserEmail(member.auth.email);
+
+          // If logout confirmation is requested, don't auto-redirect
+          if (showLogoutConfirm) {
+            setLoading(false);
+          } else {
+            handleAuthenticatedUser(member.auth.email);
+          }
         } else {
           // Not authenticated - show login form
           console.log('Not authenticated - showing login form');
@@ -64,7 +81,7 @@ export default function LoginPage() {
     };
 
     initAuth();
-  }, []);
+  }, [showLogoutConfirm]);
 
   const handleAuthenticatedUser = async (email: string) => {
     console.log('Checking onboarding status for:', email);
@@ -167,14 +184,18 @@ export default function LoginPage() {
   };
 
   const handleLogout = async () => {
+    setLoading(true);
     try {
       const memberstack = (window as any).$memberstackDom;
       if (memberstack) {
         await memberstack.logout();
       }
+      // Clear logout parameter and reload
       window.location.href = '/login';
     } catch (error) {
       console.error('Logout error:', error);
+      setError('Failed to logout. Please try again.');
+      setLoading(false);
     }
   };
 
@@ -256,7 +277,39 @@ export default function LoginPage() {
               </div>
             )}
 
+            {/* Logout Confirmation */}
+            {showLogoutConfirm && currentUserEmail && !loading ? (
+              <div className="text-center py-8">
+                <div className="mb-6">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-600 mb-2">You are currently signed in as:</p>
+                  <p className="font-semibold text-gray-900 mb-6">{currentUserEmail}</p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full py-3 px-4 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors mb-3"
+                >
+                  Sign Out
+                </button>
+                <button
+                  onClick={() => {
+                    window.history.replaceState({}, '', '/login');
+                    setShowLogoutConfirm(false);
+                    handleAuthenticatedUser(currentUserEmail);
+                  }}
+                  className="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Continue to Dashboard
+                </button>
+              </div>
+            ) : null}
+
             {/* Form - Use JavaScript API like signup page */}
+            {!showLogoutConfirm && (
             <form onSubmit={handleEmailLogin} className={loading ? 'opacity-0 pointer-events-none' : ''}>
               {/* Google OAuth Button */}
               <button
@@ -318,6 +371,7 @@ export default function LoginPage() {
                 </button>
               </div>
             </form>
+            )}
 
             <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-100">
               <div className="flex items-start gap-3">
