@@ -6,7 +6,7 @@
 
 const PROJECT_NUMBER = '474964350921';
 const POOL_ID = 'vercel-pool';
-const PROVIDER_ID = 'vercel-oidc';
+const PROVIDER_ID = 'vercel-provider';
 const SERVICE_ACCOUNT = 'vercel-auth-caller@sylvan-journey-474401-f9.iam.gserviceaccount.com';
 
 interface TokenResponse {
