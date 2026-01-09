@@ -53,8 +53,8 @@ export default function Home() {
       {/* Footer */}
       <footer className="w-full py-8 px-8 border-t border-gray-200 text-center text-gray-600">
         <div className="flex justify-center gap-6 mb-4">
-          <a href="/privacy" className="hover:text-gray-900 transition-colors">Privacy Policy</a>
-          <a href="/terms" className="hover:text-gray-900 transition-colors">Terms of Service</a>
+          <a href="https://digitalarchitex.com/privacy" className="hover:text-gray-900 transition-colors">Privacy Policy</a>
+          <a href="https://digitalarchitex.com/terms" className="hover:text-gray-900 transition-colors">Terms of Service</a>
           <a href="mailto:contact@digitalarchitex.com" className="hover:text-gray-900 transition-colors">Contact</a>
         </div>
         <p>&copy; 2026 Digital Architex. All rights reserved.</p>
