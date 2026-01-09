@@ -5,16 +5,14 @@ import { useEffect, useState } from 'react';
 export default function LoginPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [currentUserEmail, setCurrentUserEmail] = useState('');
 
-  useEffect(() => {
-    // Check if logout parameter is present
+  // Check logout parameter directly from URL (not from state to avoid race condition)
+  const isLogoutRequested = () => {
+    if (typeof window === 'undefined') return false;
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('logout') === 'true') {
-      setShowLogoutConfirm(true);
-    }
-  }, []);
+    return urlParams.get('logout') === 'true';
+  };
 
   useEffect(() => {
     const waitForMemberstack = () => {
@@ -64,7 +62,8 @@ export default function LoginPage() {
           setCurrentUserEmail(member.auth.email);
 
           // If logout confirmation is requested, don't auto-redirect
-          if (showLogoutConfirm) {
+          if (isLogoutRequested()) {
+            console.log('Logout requested - showing confirmation');
             setLoading(false);
           } else {
             handleAuthenticatedUser(member.auth.email);
@@ -81,7 +80,7 @@ export default function LoginPage() {
     };
 
     initAuth();
-  }, [showLogoutConfirm]);
+  }, []);
 
   const handleAuthenticatedUser = async (email: string) => {
     console.log('Checking onboarding status for:', email);
@@ -278,7 +277,7 @@ export default function LoginPage() {
             )}
 
             {/* Logout Confirmation */}
-            {showLogoutConfirm && currentUserEmail && !loading ? (
+            {isLogoutRequested() && currentUserEmail && !loading ? (
               <div className="text-center py-8">
                 <div className="mb-6">
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -298,7 +297,6 @@ export default function LoginPage() {
                 <button
                   onClick={() => {
                     window.history.replaceState({}, '', '/login');
-                    setShowLogoutConfirm(false);
                     handleAuthenticatedUser(currentUserEmail);
                   }}
                   className="w-full py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
@@ -309,7 +307,7 @@ export default function LoginPage() {
             ) : null}
 
             {/* Form - Use JavaScript API like signup page */}
-            {!showLogoutConfirm && (
+            {!isLogoutRequested() && (
             <form onSubmit={handleEmailLogin} className={loading ? 'opacity-0 pointer-events-none' : ''}>
               {/* Google OAuth Button */}
               <button
