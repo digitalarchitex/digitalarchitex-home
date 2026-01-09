@@ -14,7 +14,7 @@ export default function Home() {
             Sign Up
           </a>
           <a
-            href="https://darx-site-generator-slgtfcnoxq-uc.a.run.app/onboard/login"
+            href="https://darx-auth-portal.vercel.app/login"
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors shadow-lg shadow-blue-600/30"
           >
             Login
@@ -41,7 +41,7 @@ export default function Home() {
               Get Started
             </a>
             <a
-              href="https://darx-site-generator-slgtfcnoxq-uc.a.run.app/onboard/login"
+              href="https://darx-auth-portal.vercel.app/login"
               className="px-8 py-4 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold text-lg hover:border-gray-400 hover:scale-105 transition-all"
             >
               Login to Dashboard
